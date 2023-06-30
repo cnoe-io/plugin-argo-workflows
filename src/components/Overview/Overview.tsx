@@ -12,6 +12,7 @@ import { Grid } from "@material-ui/core";
 import { OverviewTable } from "../WorkflowOverview/WorkflowOverview";
 import { useEntity } from "@backstage/plugin-catalog-react";
 import { isArgoWorkflowsAvailable } from "../../plugin";
+import { WorkflowTemplateTable } from "../WorkflowTemplateOverview/WorkflowTemplateOverview";
 
 export const ArgoWorkflowsOverviewPage = () => (
   <Page themeId="tool">
@@ -35,6 +36,18 @@ export const ArgoWorkflowsOverviewCard = () => {
     return (
       <InfoCard {...{ title: "Argo Workflows" }}>
         <OverviewTable />
+      </InfoCard>
+    );
+  }
+  return null;
+};
+
+export const ArgoWorkflowsTemplatesOverviewCard = () => {
+  const { entity } = useEntity();
+  if (isArgoWorkflowsAvailable(entity)) {
+    return (
+      <InfoCard {...{ title: "Argo Workflows Templates" }}>
+        <WorkflowTemplateTable />
       </InfoCard>
     );
   }

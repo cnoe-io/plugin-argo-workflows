@@ -50,6 +50,9 @@ const overviewContent = (
         <Grid item md={6}>
             <EntityArgoWorkflowsOverviewCard />
         </Grid>
+        <Grid item md={6}>
+            <EntityArgoWorkflowsTemplateOverviewCard />
+        </Grid>
         </EntitySwitch.Case>
     </EntitySwitch>
         ...

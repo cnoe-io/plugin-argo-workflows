@@ -1,31 +1,26 @@
+import { useEntity } from "@backstage/plugin-catalog-react";
 import { configApiRef, useApi } from "@backstage/core-plugin-api";
 import { argoWorkflowsApiRef } from "../../api";
-import useAsync from "react-use/lib/useAsync";
+import { getAnnotationValues, trimBaseUrl } from "../utils";
 import { Link, Progress, Table, TableColumn } from "@backstage/core-components";
 import React from "react";
+import useAsync from "react-use/lib/useAsync";
 import Alert from "@material-ui/lab/Alert";
-import { useEntity } from "@backstage/plugin-catalog-react";
-import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated";
-import { getAnnotationValues, trimBaseUrl } from "../utils";
 
 type TableData = {
   id: string;
   name: string;
   namespace: string;
-  phase?: string;
-  progress?: string;
-  startedAt?: string;
-  finishedAt?: string;
+  entrypoint: string | undefined;
 };
 
-export const OverviewTable = () => {
+export const WorkflowTemplateTable = () => {
   const { entity } = useEntity();
   const apiClient = useApi(argoWorkflowsApiRef);
   const configApi = useApi(configApiRef);
   const argoWorkflowsBaseUrl = trimBaseUrl(
     configApi.getOptionalString("argoWorkflows.baseUrl")
   );
-
   const { ns, clusterName, labelSelector } = getAnnotationValues(entity);
 
   const columns: TableColumn[] = [
@@ -36,7 +31,7 @@ export const OverviewTable = () => {
         if (data && argoWorkflowsBaseUrl) {
           return (
             <Link
-              to={`${argoWorkflowsBaseUrl}/workflows/${data.namespace}/${data.name}`}
+              to={`${argoWorkflowsBaseUrl}/workflow-templates/${data.namespace}/${data.name}`}
             >
               {data.name}
             </Link>
@@ -44,59 +39,29 @@ export const OverviewTable = () => {
         }
         return data.name;
       },
-    },
-    {
-      title: "Phase",
-      field: "phase",
-      cellStyle: (data, _) => {
-        if (data === "Succeeded") {
-          return {
-            color: "#6CD75F",
-          };
-        }
-        if (data === "Error" || data === "Failed") {
-          return {
-            color: "#DC3D5A",
-          };
-        }
-        return {};
-      },
-    },
-    { title: "Progress", field: "progress" },
-    {
-      title: "StartTime",
-      field: "startedAt",
-      type: "datetime",
       defaultSort: "desc",
     },
-    { title: "EndTime", field: "finishedAt", type: "datetime" },
-    { title: "Namespace", field: "namespace", type: "string" },
+    { title: "namespace", field: "namespace", type: "string" },
+    { title: "entrypoint", field: "entrypoint", type: "string" },
   ];
 
-  const { value, loading, error } = useAsync(
-    async (): Promise<IoArgoprojWorkflowV1alpha1WorkflowList> => {
-      return await apiClient.getWorkflows(clusterName, ns, labelSelector);
-    }
-  );
+  const { value, loading, error } = useAsync(async () => {
+    return await apiClient.getWorkflowTemplates(clusterName, ns, labelSelector);
+  });
 
   if (loading) {
     return <Progress />;
   } else if (error) {
     return <Alert severity="error">{`${error}`}</Alert>;
   }
-
   const data = value?.items?.map((val) => {
     return {
       id: val.metadata.name,
       name: val.metadata.name,
       namespace: val.metadata.namespace,
-      phase: val.status?.phase,
-      progress: val.status?.progress,
-      startedAt: val.status?.startedAt,
-      finishedAt: val.status?.finishedAt,
+      entrypoint: val.spec.entrypoint,
     } as TableData;
   });
-
   if (data && data.length > 0) {
     return (
       <Table

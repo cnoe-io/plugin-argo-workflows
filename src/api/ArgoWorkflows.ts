@@ -1,6 +1,9 @@
 import { DiscoveryApi, FetchApi } from "@backstage/core-plugin-api";
 import { KubernetesApi } from "@backstage/plugin-kubernetes";
-import { IoArgoprojWorkflowV1alpha1WorkflowList } from "./generated";
+import {
+  IoArgoprojWorkflowV1alpha1WorkflowList,
+  IoArgoprojWorkflowV1alpha1WorkflowTemplateList,
+} from "./generated";
 import { ArgoWorkflowsApi } from "./index";
 
 const API_VERSION = "argoproj.io/v1alpha1";
@@ -27,7 +30,7 @@ export class ArgoWorkflows implements ArgoWorkflowsApi {
 
   async getWorkflowsFromK8s(
     clusterName: string | undefined,
-    namespace: string | undefined,
+    namespace: string,
     labels: string | undefined
   ): Promise<IoArgoprojWorkflowV1alpha1WorkflowList> {
     const ns = namespace !== undefined ? namespace : "default";
@@ -69,32 +72,37 @@ export class ArgoWorkflows implements ArgoWorkflowsApi {
     return this.getWorkflowsFromProxy(namespace, labels);
   }
 
+  async getWorkflowTemplates(
+    clusterName: string | undefined,
+    namespace: string,
+    labels: string | undefined
+  ): Promise<IoArgoprojWorkflowV1alpha1WorkflowTemplateList> {
+    if (clusterName) {
+      return Promise.reject("t");
+    }
+    return this.getWorkflowTemplatesFromProxy(namespace, labels);
+  }
+
   async getWorkflowsFromProxy(
-    namespace: string | undefined,
+    namespace: string,
     labels: string | undefined
   ): Promise<IoArgoprojWorkflowV1alpha1WorkflowList> {
-    const proxyUrl = await this.discoveryApi.getBaseUrl("proxy");
+    const path = `/api/v1/workflows/${namespace}`;
+    const resp = await this.fetchFromPath(path, labels);
+    return await checkAndReturn<IoArgoprojWorkflowV1alpha1WorkflowTemplateList>(
+      resp
+    );
+  }
 
-    const ns = namespace !== undefined ? namespace : "default";
-    const url = `${proxyUrl}${DEFAULT_WORKFLOW_PROXY}/api/v1/workflows/${ns}`;
+  async getWorkflowTemplatesFromProxy(
+    namespace: string,
+    labels: string | undefined
+  ): Promise<IoArgoprojWorkflowV1alpha1WorkflowTemplateList> {
+    const path = `/api/v1/workflow-templates/${namespace}`;
 
-    const query = new URLSearchParams({ [API_TIMEOUT]: "30" });
-    if (labels) {
-      query.set(API_LABEL_SELECTOR, labels);
-    }
-    const resp = await this.fetchApi.fetch(`${url}?${query.toString()}`, {});
-
-    if (!resp.ok) {
-      return Promise.reject(
-        `failed to fetch resources: ${resp.status}, ${
-          resp.statusText
-        }, ${await resp.text()}`
-      );
-    }
-
-    // need validation
-    return Promise.resolve(
-      JSON.parse(await resp.text()) as IoArgoprojWorkflowV1alpha1WorkflowList
+    const resp = await this.fetchFromPath(path, labels);
+    return await checkAndReturn<IoArgoprojWorkflowV1alpha1WorkflowTemplateList>(
+      resp
     );
   }
 
@@ -105,4 +113,29 @@ export class ArgoWorkflows implements ArgoWorkflowsApi {
     }
     return Promise.reject("no clusters found in configuration");
   }
+
+  async fetchFromPath(
+    path: string,
+    labels: string | undefined
+  ): Promise<Response> {
+    const proxyUrl = await this.discoveryApi.getBaseUrl("proxy");
+    const url = `${proxyUrl}${DEFAULT_WORKFLOW_PROXY}${path}`;
+    const query = new URLSearchParams({ [API_TIMEOUT]: "30" });
+    if (labels) {
+      query.set(API_LABEL_SELECTOR, labels);
+    }
+    return this.fetchApi.fetch(`${url}?${query.toString()}`, {});
+  }
+}
+
+async function checkAndReturn<T>(resp: Response): Promise<T> {
+  if (!resp.ok) {
+    return Promise.reject(
+      `failed to fetch resources: ${resp.status}, ${
+        resp.statusText
+      }, ${await resp.text()}`
+    );
+  }
+  // need validation
+  return Promise.resolve(JSON.parse(await resp.text()) as T);
 }

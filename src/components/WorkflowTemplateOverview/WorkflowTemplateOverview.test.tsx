@@ -15,9 +15,9 @@ import {
 import { ArgoWorkflowsApi, argoWorkflowsApiRef } from "../../api";
 import { KubernetesApi, kubernetesApiRef } from "@backstage/plugin-kubernetes";
 import { EntityProvider } from "@backstage/plugin-catalog-react";
-import { OverviewTable } from "./WorkflowOverview";
-import { inProgress, mixResponse } from "../../test-data/testResponse";
-import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated";
+import { WorkflowTemplateTable } from "./WorkflowTemplateOverview";
+import { simple } from "../../test-data/testResponseWorkflowTemplates";
+import { IoArgoprojWorkflowV1alpha1WorkflowTemplateList } from "../../api/generated";
 
 const BASE_URL = "https://backstage.io";
 const mockConfigApi = new MockConfigApi({
@@ -66,14 +66,18 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe("WorkflowOverviewComponent", () => {
+describe("WorkflowTemplateTable", () => {
   it("should display workflows without link", async () => {
     jest
-      .spyOn(mockArgoWorkflows, "getWorkflows")
+      .spyOn(mockArgoWorkflows, "getWorkflowTemplates")
       .mockImplementation(
-        (_n, _ns, _l): Promise<IoArgoprojWorkflowV1alpha1WorkflowList> => {
+        (
+          _n,
+          _ns,
+          _l
+        ): Promise<IoArgoprojWorkflowV1alpha1WorkflowTemplateList> => {
           return Promise.resolve(
-            inProgress as unknown as IoArgoprojWorkflowV1alpha1WorkflowList
+            simple as unknown as IoArgoprojWorkflowV1alpha1WorkflowTemplateList
           );
         }
       );
@@ -83,24 +87,25 @@ describe("WorkflowOverviewComponent", () => {
     const r = await renderInTestApp(
       <TestApiProvider apis={apis}>
         <EntityProvider entity={entity}>
-          <OverviewTable />
+          <WorkflowTemplateTable />
         </EntityProvider>
       </TestApiProvider>
     );
-    const c = r.getByText(inProgress.items[0].metadata.name);
-    expect(c).not.toHaveAttribute(
-      "href",
-      `${BASE_URL}/workflows/default/${inProgress.items[0].metadata.name}`
-    );
+    const c = r.getByText(simple.items[0].metadata.name);
+    expect(c).not.toHaveAttribute("href");
   });
 
   it("should display workflows wth link", async () => {
     const spyWorkflows = jest
-      .spyOn(mockArgoWorkflows, "getWorkflows")
+      .spyOn(mockArgoWorkflows, "getWorkflowTemplates")
       .mockImplementation(
-        (_n, _ns, _l): Promise<IoArgoprojWorkflowV1alpha1WorkflowList> => {
+        (
+          _n,
+          _ns,
+          _l
+        ): Promise<IoArgoprojWorkflowV1alpha1WorkflowTemplateList> => {
           return Promise.resolve(
-            mixResponse as unknown as IoArgoprojWorkflowV1alpha1WorkflowList
+            simple as unknown as IoArgoprojWorkflowV1alpha1WorkflowTemplateList
           );
         }
       );
@@ -112,16 +117,16 @@ describe("WorkflowOverviewComponent", () => {
     const r = await renderInTestApp(
       <TestApiProvider apis={apis}>
         <EntityProvider entity={entity}>
-          <OverviewTable data-testid="test" />
+          <WorkflowTemplateTable data-testid="test" />
         </EntityProvider>
       </TestApiProvider>
     );
     expect(spyWorkflows).toHaveBeenCalledWith(undefined, "default", "my=env");
     expect(spyConfigApi).toHaveBeenCalledWith("argoWorkflows.baseUrl");
-    const c = r.getByText(mixResponse.items[0].metadata.name);
+    const c = r.getByText(simple.items[0].metadata.name);
     expect(c).toHaveAttribute(
       "href",
-      `${BASE_URL}/workflows/default/${mixResponse.items[0].metadata.name}`
+      `${BASE_URL}/workflow-templates/default/${simple.items[0].metadata.name}`
     );
   });
 });

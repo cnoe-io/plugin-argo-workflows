@@ -54,6 +54,18 @@ export const EntityArgoWorkflowsOverviewCard = argoWorkflowsPlugin.provide(
   })
 );
 
+export const EntityArgoWorkflowsTemplateOverviewCard =
+  argoWorkflowsPlugin.provide(
+    createRoutableExtension({
+      name: "ArgoWorkflowsTemplatesOverviewCard",
+      component: () =>
+        import("./components/Overview").then(
+          (m) => m.ArgoWorkflowsTemplatesOverviewCard
+        ),
+      mountPoint: rootRouteRef,
+    })
+  );
+
 export const isArgoWorkflowsAvailable = (entity: Entity) =>
   Boolean(
     entity?.metadata.annotations?.[ARGO_WORKFLOWS_LABEL_SELECTOR_ANNOTATION]
