@@ -2,7 +2,7 @@ import { configApiRef, useApi } from "@backstage/core-plugin-api";
 import { argoWorkflowsApiRef } from "../../api";
 import useAsync from "react-use/lib/useAsync";
 import { Link, Progress, Table, TableColumn } from "@backstage/core-components";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Alert from "@material-ui/lab/Alert";
 import { useEntity } from "@backstage/plugin-catalog-react";
 import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated/api";
@@ -25,9 +25,8 @@ export const OverviewTable = () => {
   const argoWorkflowsBaseUrl = trimBaseUrl(
     configApi.getOptionalString("argoWorkflows.baseUrl")
   );
-
+  const [columnData, setColumnData] = useState([] as TableData[]);
   const { ns, clusterName, labelSelector } = getAnnotationValues(entity);
-
   const columns: TableColumn[] = [
     {
       title: "Name",
@@ -72,12 +71,27 @@ export const OverviewTable = () => {
     { title: "EndTime", field: "finishedAt", type: "datetime" },
     { title: "Namespace", field: "namespace", type: "string" },
   ];
-
   const { value, loading, error } = useAsync(
     async (): Promise<IoArgoprojWorkflowV1alpha1WorkflowList> => {
       return await apiClient.getWorkflows(clusterName, ns, labelSelector);
     }
   );
+  useEffect(() => {
+    const data = value?.items?.map((val) => {
+      return {
+        id: val.metadata.name,
+        name: val.metadata.name,
+        namespace: val.metadata.namespace,
+        phase: val.status?.phase,
+        progress: val.status?.progress,
+        startedAt: val.status?.startedAt,
+        finishedAt: val.status?.finishedAt,
+      } as TableData;
+    });
+    if (data && data.length > 0) {
+      setColumnData(data);
+    }
+  }, [value]);
 
   if (loading) {
     return <Progress />;
@@ -85,33 +99,16 @@ export const OverviewTable = () => {
     return <Alert severity="error">{`${error}`}</Alert>;
   }
 
-  const data = value?.items?.map((val) => {
-    return {
-      id: val.metadata.name,
-      name: val.metadata.name,
-      namespace: val.metadata.namespace,
-      phase: val.status?.phase,
-      progress: val.status?.progress,
-      startedAt: val.status?.startedAt,
-      finishedAt: val.status?.finishedAt,
-    } as TableData;
-  });
-
-  if (data && data.length > 0) {
-    return (
-      <Table
-        options={{
-          padding: "dense",
-          paging: true,
-          search: true,
-          sorting: true,
-        }}
-        columns={columns}
-        data={data}
-      />
-    );
-  }
   return (
-    <Alert severity="info">"No workflows found with provided labels"</Alert>
+    <Table
+      options={{
+        padding: "dense",
+        paging: true,
+        search: true,
+        sorting: true,
+      }}
+      columns={columns}
+      data={columnData}
+    />
   );
 };

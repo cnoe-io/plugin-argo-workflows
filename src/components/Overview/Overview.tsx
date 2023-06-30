@@ -26,6 +26,9 @@ export const ArgoWorkflowsOverviewPage = () => (
       <Grid item>
         <OverviewTable />
       </Grid>
+      <Grid item>
+        <WorkflowTemplateTable />
+      </Grid>
     </Content>
   </Page>
 );

@@ -3,7 +3,7 @@ import { configApiRef, useApi } from "@backstage/core-plugin-api";
 import { argoWorkflowsApiRef } from "../../api";
 import { getAnnotationValues, trimBaseUrl } from "../utils";
 import { Link, Progress, Table, TableColumn } from "@backstage/core-components";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import useAsync from "react-use/lib/useAsync";
 import Alert from "@material-ui/lab/Alert";
 
@@ -21,6 +21,7 @@ export const WorkflowTemplateTable = () => {
   const argoWorkflowsBaseUrl = trimBaseUrl(
     configApi.getOptionalString("argoWorkflows.baseUrl")
   );
+  const [columnData, setColumnData] = useState([] as TableData[]);
   const { ns, clusterName, labelSelector } = getAnnotationValues(entity);
 
   const columns: TableColumn[] = [
@@ -49,34 +50,36 @@ export const WorkflowTemplateTable = () => {
     return await apiClient.getWorkflowTemplates(clusterName, ns, labelSelector);
   });
 
+  useEffect(() => {
+    const data = value?.items?.map((val) => {
+      return {
+        id: val.metadata.name,
+        name: val.metadata.name,
+        namespace: val.metadata.namespace,
+        entrypoint: val.spec.entrypoint,
+      } as TableData;
+    });
+    if (data && data.length > 0) {
+      setColumnData(data);
+    }
+  }, [value]);
+
   if (loading) {
     return <Progress />;
   } else if (error) {
     return <Alert severity="error">{`${error}`}</Alert>;
   }
-  const data = value?.items?.map((val) => {
-    return {
-      id: val.metadata.name,
-      name: val.metadata.name,
-      namespace: val.metadata.namespace,
-      entrypoint: val.spec.entrypoint,
-    } as TableData;
-  });
-  if (data && data.length > 0) {
-    return (
-      <Table
-        options={{
-          padding: "dense",
-          paging: true,
-          search: true,
-          sorting: true,
-        }}
-        columns={columns}
-        data={data}
-      />
-    );
-  }
+
   return (
-    <Alert severity="info">"No workflows found with provided labels"</Alert>
+    <Table
+      options={{
+        padding: "dense",
+        paging: true,
+        search: true,
+        sorting: true,
+      }}
+      columns={columns}
+      data={columnData}
+    />
   );
 };
