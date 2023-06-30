@@ -5,7 +5,7 @@ import { Link, Progress, Table, TableColumn } from "@backstage/core-components";
 import React from "react";
 import Alert from "@material-ui/lab/Alert";
 import { useEntity } from "@backstage/plugin-catalog-react";
-import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated";
+import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated/api";
 import { getAnnotationValues, trimBaseUrl } from "../utils";
 
 type TableData = {

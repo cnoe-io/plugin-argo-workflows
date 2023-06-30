@@ -3,7 +3,7 @@ import { KubernetesApi } from "@backstage/plugin-kubernetes";
 import {
   IoArgoprojWorkflowV1alpha1WorkflowList,
   IoArgoprojWorkflowV1alpha1WorkflowTemplateList,
-} from "./generated";
+} from "./generated/api";
 import { ArgoWorkflowsApi } from "./index";
 
 const API_VERSION = "argoproj.io/v1alpha1";

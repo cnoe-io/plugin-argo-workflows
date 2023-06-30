@@ -3,7 +3,7 @@ import { createApiRef } from "@backstage/core-plugin-api";
 import {
   IoArgoprojWorkflowV1alpha1WorkflowList,
   IoArgoprojWorkflowV1alpha1WorkflowTemplateList,
-} from "./generated/";
+} from "./generated/api";
 
 export { ArgoWorkflows } from "./ArgoWorkflows";
 

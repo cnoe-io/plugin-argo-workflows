@@ -17,7 +17,7 @@ import { KubernetesApi, kubernetesApiRef } from "@backstage/plugin-kubernetes";
 import { EntityProvider } from "@backstage/plugin-catalog-react";
 import { WorkflowTemplateTable } from "./WorkflowTemplateOverview";
 import { simple } from "../../test-data/testResponseWorkflowTemplates";
-import { IoArgoprojWorkflowV1alpha1WorkflowTemplateList } from "../../api/generated";
+import { IoArgoprojWorkflowV1alpha1WorkflowTemplateList } from "../../api/generated/api";
 
 const BASE_URL = "https://backstage.io";
 const mockConfigApi = new MockConfigApi({
