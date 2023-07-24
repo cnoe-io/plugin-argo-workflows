@@ -1,7 +1,16 @@
 import { configApiRef, useApi } from "@backstage/core-plugin-api";
 import { argoWorkflowsApiRef } from "../../api";
 import useAsync from "react-use/lib/useAsync";
-import { Link, Progress, Table, TableColumn } from "@backstage/core-components";
+import {
+  Link,
+  Progress,
+  StatusError,
+  StatusOK,
+  StatusPending,
+  StatusRunning,
+  Table,
+  TableColumn,
+} from "@backstage/core-components";
 import React, { useState, useEffect } from "react";
 import Alert from "@material-ui/lab/Alert";
 import { useEntity } from "@backstage/plugin-catalog-react";
@@ -12,7 +21,7 @@ type TableData = {
   id: string;
   name: string;
   namespace: string;
-  phase?: string;
+  phase?: JSX.Element;
   progress?: string;
   startedAt?: string;
   finishedAt?: string;
@@ -47,19 +56,6 @@ export const OverviewTable = () => {
     {
       title: "Phase",
       field: "phase",
-      cellStyle: (data, _) => {
-        if (data === "Succeeded") {
-          return {
-            color: "#6CD75F",
-          };
-        }
-        if (data === "Error" || data === "Failed") {
-          return {
-            color: "#DC3D5A",
-          };
-        }
-        return {};
-      },
     },
     { title: "Progress", field: "progress" },
     {
@@ -78,11 +74,27 @@ export const OverviewTable = () => {
   );
   useEffect(() => {
     const data = value?.items?.map((val) => {
+      let state = {};
+      switch (val.status?.phase) {
+        case "Running":
+          state = <StatusRunning>Running</StatusRunning>;
+          break;
+        case "Succeeded":
+          state = <StatusOK>Succeeded</StatusOK>;
+          break;
+        case "Failed":
+        case "Error":
+          state = <StatusError>Failed</StatusError>;
+          break;
+        default:
+          state = <StatusPending>'${val.status?.phase}'</StatusPending>;
+          break;
+      }
       return {
         id: val.metadata.name,
         name: val.metadata.name,
         namespace: val.metadata.namespace,
-        phase: val.status?.phase,
+        phase: state,
         progress: val.status?.progress,
         startedAt: val.status?.startedAt,
         finishedAt: val.status?.finishedAt,

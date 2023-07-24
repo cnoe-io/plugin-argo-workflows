@@ -67,7 +67,7 @@ export const WorkflowTemplateTable = () => {
   if (loading) {
     return <Progress />;
   } else if (error) {
-    return <Alert severity="error">{`${error}`}</Alert>;
+    return <Alert severity="info">no workflow templates found</Alert>;
   }
 
   return (
