@@ -11,7 +11,10 @@ This plugin displays your Argo Workflows in Backstage
 
 ### Configuration
 
-Entities must be annotated with Kubernetes annotations. For example:
+Entities must be annotated with Kubernetes annotations. An example component
+would look like the following where you can configure the `spec` to your
+liking. Information specific to Argo Workflows goes under `annotations` as 
+shown below:
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
@@ -21,6 +24,11 @@ metadata:
   annotations:
     backstage.io/kubernetes-namespace: default
     backstage.io/kubernetes-label-selector: env=dev,my=label
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user1
+  system: system1
 ```
 
 Configure your Argo Workflows' instance base URL. Ths is optional. If defined, workflows will have links to Argo Workflows UI.
@@ -62,10 +70,15 @@ const overviewContent = (
 
 
 #### Annotations
-- `backstage.io/kubernetes-namespace`: Optional. Defaults to the `default` namespace.
-- `backstage.io/kubernetes-label-selector`: Conditionally required. One of label selectors must be defined.
-- `argo-workflows/label-selector`: Conditionally required. One of label selectors must be defined. This value takes precedent over the one above. 
-- `argo-workflows/cluster-name`: Optional. Specifies the name of Kubernetes cluster to retrieve information from.
+As shown in the example above, the following annotations could go under
+`annotations` in the backstage `Component` and will be recognized by this plugin.
+
+- `backstage.io/kubernetes-namespace`: Optional. The namespace to be search for finding Argo workflows. Defaults to the `default` namespace.
+- Conditionally, one of the two labels below are required:
+  - `backstage.io/kubernetes-label-selector`: the backstage default label
+    selector to choose workflows that carry the label.
+  - `argo-workflows/label-selector`: Same as the above, except internal to Argo machinery. This value takes precedent over the one above if both are defined.
+- `argo-workflows/cluster-name`: Optional. Specifies the name of the Kubernetes cluster to retrieve information from. If missing chooses the Kubernetes context available to backstage at runtime.
 
 ### Authentication
 
@@ -133,7 +146,7 @@ This method uses a service account token to retrieve information from Argo API t
     ```
 4.  Grab the token value and make it available as an environment variable for your backstage backend.
     ```bash
-    ARGO_TOKEN="Bearer $(kubectl get secret -n argo backstage-argo-workflows-plugin-token -o=jsonpath='{.data.token}' | base64 --decode)"
+    export ARGO_WORKFLOWS_AUTH_TOKEN="Bearer $(kubectl get secret -n argo backstage-argo-workflows-plugin-token -o=jsonpath='{.data.token}' | base64 --decode)"
     ```
     If this is running in Kubernetes see this [documentation](https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data).
 
@@ -171,4 +184,9 @@ metadata:
     backstage.io/kubernetes-namespace: default
     backstage.io/kubernetes-label-selector: env=dev,my=label
     argo-workflows/cluster-name: my-cluster-1
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user1
+  system: system1
 ```
