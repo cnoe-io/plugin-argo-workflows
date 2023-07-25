@@ -11,12 +11,13 @@ import { rootRouteRef } from "./routes";
 import { ArgoWorkflows, argoWorkflowsApiRef } from "./api";
 import { kubernetesApiRef } from "@backstage/plugin-kubernetes";
 
-export const CLUSTER_NAME_ANNOTATION = "argo-workflows/cluster-name";
+export const CLUSTER_NAME_ANNOTATION = "argo-workflows.cnoe.io/cluster-name";
 export const K8S_LABEL_SELECTOR_ANNOTATION =
   "backstage.io/kubernetes-label-selector";
 export const K8S_NAMESPACE_ANNOTATION = "backstage.io/kubernetes-namespace";
 export const ARGO_WORKFLOWS_LABEL_SELECTOR_ANNOTATION =
-  "argo-workflows/label-selector";
+  "argo-workflows.cnoe.io/label-selector";
+
 export const argoWorkflowsPlugin = createPlugin({
   id: "argo-workflows",
   routes: {

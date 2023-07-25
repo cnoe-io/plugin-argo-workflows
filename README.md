@@ -13,7 +13,7 @@ This plugin displays your Argo Workflows in Backstage
 
 Entities must be annotated with Kubernetes annotations. An example component
 would look like the following where you can configure the `spec` to your
-liking. Information specific to Argo Workflows goes under `annotations` as 
+liking. Information specific to Argo Workflows goes under `annotations` as
 shown below:
 
 ```yaml
@@ -23,7 +23,7 @@ metadata:
   name: backstage
   annotations:
     backstage.io/kubernetes-namespace: default
-    backstage.io/kubernetes-label-selector: env=dev,my=label
+    argo-workflows.cnoe.io/label-selector: env=dev,my=label
 spec:
   type: service
   lifecycle: experimental
@@ -38,13 +38,13 @@ argoWorkflows:
   baseUrl: https://my-argo-workflows.url
 ```
 
-Update your Entity page. For example: 
+Update your Entity page. For example:
 ```typescript
 // in packages/app/src/components/catalog/EntityPage.tsx
 import {
     EntityArgoWorkflowsOverviewCard,
     isArgoWorkflowsAvailable,
-} from '@internal/plugin-argo-workflows';
+} from '@cnoe-io/plugin-argo-workflows';
 
 
 const overviewContent = (
@@ -74,11 +74,14 @@ As shown in the example above, the following annotations could go under
 `annotations` in the backstage `Component` and will be recognized by this plugin.
 
 - `backstage.io/kubernetes-namespace`: Optional. The namespace to be search for finding Argo workflows. Defaults to the `default` namespace.
-- Conditionally, one of the two labels below are required:
-  - `backstage.io/kubernetes-label-selector`: the backstage default label
-    selector to choose workflows that carry the label.
-  - `argo-workflows/label-selector`: Same as the above, except internal to Argo machinery. This value takes precedent over the one above if both are defined.
-- `argo-workflows/cluster-name`: Optional. Specifies the name of the Kubernetes cluster to retrieve information from. If missing chooses the Kubernetes context available to backstage at runtime.
+- `argo-workflows.cnoe.io/label-selector`: Same as the above, except internal to Argo machinery. This value takes precedent over the one above if both are defined.
+- `argo-workflows.cnoe.io/cluster-name`: Optional. Specifies the name of the Kubernetes cluster to retrieve information from. If missing chooses the Kubernetes context available to backstage at runtime.
+
+you can also use the `backstage.io/kubernetes-label-selector`, to select the
+relevant spark jobs. However , `backstage.io/kubernetes-label-selector` is a
+generic label selector used more widely by the Kubernetes plugin which could
+pull other less relevant data pulled into your backstage deployment as well. We
+recommend using `argo-workflows.cnoe.io/label-selector` when using this plugin.
 
 ### Authentication
 
@@ -173,7 +176,7 @@ kubernetes:
           caData: LS0t
 ```
 
-For this configuration, the `argo-workflows/cluster-name` annotaton value must be `my-cluster-1`
+For this configuration, the `argo-workflows.cnoe.io/cluster-name` annotaton value must be `my-cluster-1`
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
@@ -182,8 +185,8 @@ metadata:
   name: backstage
   annotations:
     backstage.io/kubernetes-namespace: default
-    backstage.io/kubernetes-label-selector: env=dev,my=label
-    argo-workflows/cluster-name: my-cluster-1
+    argo-workflows.cnoe.io/label-selector: env=dev,my=label
+    argo-workflows.cnoe.io/cluster-name: my-cluster-1
 spec:
   type: service
   lifecycle: experimental
