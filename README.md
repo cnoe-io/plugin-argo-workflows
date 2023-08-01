@@ -78,7 +78,7 @@ As shown in the example above, the following annotations could go under
 - `argo-workflows.cnoe.io/cluster-name`: Optional. Specifies the name of the Kubernetes cluster to retrieve information from. If missing chooses the Kubernetes context available to backstage at runtime.
 
 you can also use the `backstage.io/kubernetes-label-selector`, to select the
-relevant spark jobs. However , `backstage.io/kubernetes-label-selector` is a
+relevant argo workflows. However , `backstage.io/kubernetes-label-selector` is a
 generic label selector used more widely by the Kubernetes plugin which could
 pull other less relevant data pulled into your backstage deployment as well. We
 recommend using `argo-workflows.cnoe.io/label-selector` when using this plugin.
