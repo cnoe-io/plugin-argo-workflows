@@ -4,10 +4,6 @@ import useAsync from "react-use/lib/useAsync";
 import {
   Link,
   Progress,
-  StatusError,
-  StatusOK,
-  StatusPending,
-  StatusRunning,
   Table,
   TableColumn,
 } from "@backstage/core-components";
@@ -16,6 +12,7 @@ import Alert from "@material-ui/lab/Alert";
 import { useEntity } from "@backstage/plugin-catalog-react";
 import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated/api";
 import { getAnnotationValues, trimBaseUrl } from "../utils";
+import {renderPhase} from "../component-utils";
 
 type TableData = {
   id: string;
@@ -74,27 +71,11 @@ export const OverviewTable = () => {
   );
   useEffect(() => {
     const data = value?.items?.map((val) => {
-      let state = {};
-      switch (val.status?.phase) {
-        case "Running":
-          state = <StatusRunning>Running</StatusRunning>;
-          break;
-        case "Succeeded":
-          state = <StatusOK>Succeeded</StatusOK>;
-          break;
-        case "Failed":
-        case "Error":
-          state = <StatusError>Failed</StatusError>;
-          break;
-        default:
-          state = <StatusPending>'${val.status?.phase}'</StatusPending>;
-          break;
-      }
       return {
         id: val.metadata.name,
         name: val.metadata.name,
         namespace: val.metadata.namespace,
-        phase: state,
+        phase: renderPhase(val.status?.phase),
         progress: val.status?.progress,
         startedAt: val.status?.startedAt,
         finishedAt: val.status?.finishedAt,
