@@ -1,18 +1,18 @@
 import { configApiRef, useApi } from "@backstage/core-plugin-api";
 import { argoWorkflowsApiRef } from "../../api";
 import useAsync from "react-use/lib/useAsync";
-import {
-  Link,
-  Progress,
-  Table,
-  TableColumn,
-} from "@backstage/core-components";
+import { Link, Progress, Table, TableColumn } from "@backstage/core-components";
 import React, { useState, useEffect } from "react";
 import Alert from "@material-ui/lab/Alert";
 import { useEntity } from "@backstage/plugin-catalog-react";
-import { IoArgoprojWorkflowV1alpha1WorkflowList } from "../../api/generated/api";
+import {
+  IoArgoprojWorkflowV1alpha1Workflow,
+  IoArgoprojWorkflowV1alpha1WorkflowList,
+} from "../../api/generated/api";
 import { getAnnotationValues, trimBaseUrl } from "../utils";
-import {renderPhase} from "../component-utils";
+import { renderPhase } from "../component-utils";
+import { Drawer } from "@material-ui/core";
+import { DrawerContent } from "../WorkflowDetailsDrawer/WorkflowDetailsDrawer";
 
 type TableData = {
   id: string;
@@ -28,12 +28,16 @@ export const OverviewTable = () => {
   const { entity } = useEntity();
   const apiClient = useApi(argoWorkflowsApiRef);
   const configApi = useApi(configApiRef);
+  const [drawerData, setDrawerData] = useState(
+    {} as IoArgoprojWorkflowV1alpha1Workflow
+  );
+  const [isOpen, toggleDrawer] = useState(false);
   const argoWorkflowsBaseUrl = trimBaseUrl(
     configApi.getOptionalString("argoWorkflows.baseUrl")
   );
   const [columnData, setColumnData] = useState([] as TableData[]);
   const { ns, clusterName, labelSelector } = getAnnotationValues(entity);
-  const columns: TableColumn[] = [
+  const columns: TableColumn<TableData>[] = [
     {
       title: "Name",
       field: "name",
@@ -93,15 +97,31 @@ export const OverviewTable = () => {
   }
 
   return (
-    <Table
-      options={{
-        padding: "dense",
-        paging: true,
-        search: true,
-        sorting: true,
-      }}
-      columns={columns}
-      data={columnData}
-    />
+    <>
+      <Table
+        options={{
+          padding: "dense",
+          paging: true,
+          search: true,
+          sorting: true,
+        }}
+        columns={columns}
+        data={columnData}
+        onRowClick={(_event, rowData: TableData | undefined) => {
+          setDrawerData(rowData?.raw!);
+          toggleDrawer(true);
+        }}
+      />
+      <Drawer
+        classes={{
+          paper: classes.paper,
+        }}
+        anchor="right"
+        open={isOpen}
+        onClose={() => toggleDrawer(false)}
+      >
+        <DrawerContent toggleDrawer={toggleDrawer} workflow={drawerData} />
+      </Drawer>
+    </>
   );
 };
