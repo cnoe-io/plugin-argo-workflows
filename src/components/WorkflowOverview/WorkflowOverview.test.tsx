@@ -53,7 +53,7 @@ const entity = {
   metadata: {
     namespace: "default",
     annotations: {
-      "backstage.io/kubernetes-label-selector": "my=env",
+      "argo-workflows.cnoe.io/label-selector": "my=env",
       "backstage.io/kubernetes-namespace": "default",
     },
     name: "my-entity",

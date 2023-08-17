@@ -1,8 +1,7 @@
-import { Entity } from "@backstage/catalog-model";
+import {Entity} from "@backstage/catalog-model";
 import {
   ARGO_WORKFLOWS_LABEL_SELECTOR_ANNOTATION,
   CLUSTER_NAME_ANNOTATION,
-  K8S_LABEL_SELECTOR_ANNOTATION,
   K8S_NAMESPACE_ANNOTATION,
 } from "../plugin";
 
@@ -25,11 +24,7 @@ export function getAnnotationValues(entity: Entity): getAnnotationValuesOutput {
       ? entity.metadata.annotations?.[K8S_NAMESPACE_ANNOTATION]
       : "default";
   const clusterName = entity.metadata.annotations?.[CLUSTER_NAME_ANNOTATION];
-  const labelSelector =
-    entity.metadata?.annotations?.[ARGO_WORKFLOWS_LABEL_SELECTOR_ANNOTATION] !==
-    undefined
-      ? entity.metadata?.annotations?.[ARGO_WORKFLOWS_LABEL_SELECTOR_ANNOTATION]
-      : entity.metadata.annotations?.[K8S_LABEL_SELECTOR_ANNOTATION];
+  const labelSelector = entity.metadata?.annotations?.[ARGO_WORKFLOWS_LABEL_SELECTOR_ANNOTATION]
   return {
     ns: ns,
     clusterName: clusterName,
